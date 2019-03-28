@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
+        unique: true,
         required: true,
         trim: true,
         lowercase: true,  // whether to always call .toLowerCase() on the value
@@ -41,7 +42,23 @@ const userSchema = new mongoose.Schema({
     }
 })
 
-// Hash the password before saving it.
+userSchema.statics.findByCredentials = async (email, password) => {
+    const user = await User.findOne({ email })
+
+    if (!user) {
+        throw new Error('Unable to login')
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password)
+
+    if (!isMatch) {
+        throw new Error('Unable to login')
+    }
+
+    return user
+}
+
+// Hash the plain password before saving it.
 // Do not use arrow function in middleware!!!
 userSchema.pre('save', async function(next) {
     // In document middleware functions, 'this' refers to the document.
