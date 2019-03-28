@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
+const bcrypt = require('bcryptjs')
 
-const User = mongoose.model('User', {
+const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -39,5 +40,20 @@ const User = mongoose.model('User', {
         }
     }
 })
+
+// Hash the password before saving it.
+// Do not use arrow function in middleware!!!
+userSchema.pre('save', async function(next) {
+    // In document middleware functions, 'this' refers to the document.
+    const user = this
+
+    if (user.isModified('password')) {
+        user.password = await bcrypt.hash(user.password, 8)
+    }
+
+    next()
+})
+
+const User = mongoose.model('User', userSchema)
 
 module.exports = User
