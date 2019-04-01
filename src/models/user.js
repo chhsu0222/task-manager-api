@@ -51,9 +51,9 @@ const userSchema = new mongoose.Schema({
 
 // Virtuals
 userSchema.virtual('tasks', {
-    ref: 'Task',
-    localField: '_id',
-    foreignField: 'owner'
+    ref: 'Task', // The model to use
+    localField: '_id', // Find tasks where `localField`
+    foreignField: 'owner' // is equal to `foreignField`
 })
 
 // Instance methods
