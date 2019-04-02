@@ -25,6 +25,8 @@ const upload = multer({
 
 app.post('/upload', upload.single('upload'), (req, res) => {
     res.send()
+}, (error, req, res, next) => {  // Error handling
+    res.status(400).send({ error: error.message })
 })
 
 app.use(express.json()) // parse incoming json to an object (req.body)
