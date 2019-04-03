@@ -1,5 +1,6 @@
 const express = require('express')
 const multer = require('multer')
+const sharp = require('sharp')
 const User = require('../models/user')
 const auth = require('../middleware/auth')
 const router = new express.Router()
@@ -87,13 +88,15 @@ router.delete('/users/me', auth, async (req, res) => {
 
 const upload = multer({
     limits: {
-        fileSize: 1000000
+        fileSize: 1000000 // For multipart forms, the max file size (in bytes)
     },
     fileFilter(req, file, cb) {
         if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+            // Pass an error if something goes wrong:
             return cb(new Error('Please upload an image'))
         }
 
+        // To accept the file pass `true`, like so:
         cb(undefined, true)
     }
 })
@@ -101,10 +104,14 @@ const upload = multer({
 // Tell multer to look for a file called 'avatar' when the
 // request comes in.
 router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
-    req.user.avatar = req.file.buffer
+    const buffer = await sharp(req.file.buffer)
+        .resize({ width: 250, height: 250 })
+        .png()
+        .toBuffer()
+    req.user.avatar = buffer
     await req.user.save()
     res.send()
-}, (error, req, res, next) => {
+}, (error, req, res, next) => { // Error handling
     res.status(400).send({ error: error.message })
 })
 
@@ -126,7 +133,7 @@ router.get('/users/:id/avatar', async (req, res) =>{
             throw new Error()
         }
 
-        res.set('Content-Type', 'image/jpg')
+        res.set('Content-Type', 'image/png')
         res.send(user.avatar)
     } catch (e) {
         res.status(404).send()
