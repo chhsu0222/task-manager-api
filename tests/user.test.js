@@ -54,10 +54,10 @@ test('Should login existing user', async () => {
     expect(response.body.token).toBe(user.tokens[1].token)
 })
 
-test('Should not login noexistent user', async () => {
+test('Should not login nonexistent user', async () => {
     await request(app).post('/users/login').send({
-        email: 'noOne@example.com',
-        password: 'noPass5566!'
+        email: userOne.email,
+        password: 'thisisnotmypass'
     }).expect(400)
 })
 
@@ -87,7 +87,7 @@ test('Should delete account for user', async () => {
     expect(user).toBeNull()
 })
 
-test('Should not delete account for unauthenticated user', async () => {
+test('Should not delete account for unauthenticate user', async () => {
     await request(app)
         .delete('/users/me')
         .send()
